@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const grid = document.querySelector(".grid");
   const width = 8;
   const squares = [];
+  let score = 0;
 
   const candyColors = ["red", "yellow", "orange", "purple", "green", "blue"];
 
@@ -38,10 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(this.id, "dragStart");
   }
 
-  function dragEnd() {
-    console.log(this.id, "dragEnd");
-  }
-
   function dragOver(e) {
     e.preventDefault();
     console.log(this.id, "dragOver");
@@ -60,6 +57,50 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(this.id, "dragDrop");
     colorBeingReplaced = this.style.backgroundColor;
     squareIdBeingReplaced = parseInt(this.id);
+    this.style.backgroundColor = colorBeingDragged;
     squares[squareIdBeingDragged].style.backgroundColor = colorBeingReplaced;
   }
+
+  function dragEnd() {
+    //What is a valid move?
+    let validMoves = [
+      squareIdBeingDragged - 1,
+      squareIdBeingDragged - width,
+      squareIdBeingDragged + 1,
+      squareIdBeingDragged + width,
+    ];
+    let validMove = validMoves.includes(squareIdBeingReplaced);
+
+    if (squareIdBeingReplaced && validMove) {
+      squareIdBeingReplaced = null;
+    } else if (squareIdBeingReplaced && !validMove) {
+      squares[squareIdBeingReplaced].style.backgroundImage = colorBeingReplaced;
+      squares[squareIdBeingDragged].style.backgroundImage = colorBeingDragged;
+    } else squares[squareIdBeingDragged].style.backgroundImage = colorBeingDragged;
+  }
+
+  //for row of Three
+  function checkRowForThree() {
+    for (i = 0; i < 61; i++) {
+      let rowOfThree = [i, i + 1, i + 2];
+      let decidedColor = squares[i].style.backgroundImage;
+      const isBlank = squares[i].style.backgroundImage === "";
+
+      const notValid = [6, 7, 14, 15, 22, 23, 30, 31, 38, 39, 46, 47, 54, 55];
+      if (notValid.includes(i)) continue;
+
+      if (
+        rowOfThree.every(
+          (index) => squares[index].style.backgroundImage === decidedColor && !isBlank
+        )
+      ) {
+        score += 3;
+        scoreDisplay.innerHTML = score;
+        rowOfThree.forEach((index) => {
+          squares[index].style.backgroundImage = "";
+        });
+      }
+    }
+  }
+  checkRowForThree();
 });
